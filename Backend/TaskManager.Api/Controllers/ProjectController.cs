@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Api.Data;
+using TaskManager.Api.DTOs;
 using TaskManager.Api.Models;
 
 namespace TaskManager.Api.Controllers
@@ -10,25 +12,29 @@ namespace TaskManager.Api.Controllers
     public class ProjectController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
 
-        public ProjectController(AppDbContext context)
+        public ProjectController(AppDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/project
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
+        public async Task<ActionResult<IEnumerable<ProjectDTO>>> GetProjects()
         {
-            // Include CreatedByUser for richer info
-            return await _context.Projects
+            var projects = await _context.Projects
                 .Include(p => p.CreatedByUser)
                 .ToListAsync();
+
+            var projectsDTO = _mapper.Map<List<ProjectDTO>>(projects);
+            return Ok(projectsDTO);
         }
 
         // GET: api/project/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Project>> GetProject(int id)
+        public async Task<ActionResult<ProjectDTO>> GetProject(int id)
         {
             var project = await _context.Projects
                 .Include(p => p.CreatedByUser)
@@ -37,27 +43,36 @@ namespace TaskManager.Api.Controllers
             if (project == null)
                 return NotFound();
 
-            return project;
+            var projectDTO = _mapper.Map<ProjectDTO>(project);
+            return Ok(projectDTO);
         }
 
         // POST: api/project
         [HttpPost]
-        public async Task<ActionResult<Project>> CreateProject(Project project)
+        public async Task<ActionResult<ProjectDTO>> CreateProject(CreateProjectDTO createProjectDTO)
         {
+            var project = _mapper.Map<Project>(createProjectDTO);
+
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
+            var projectDTO = _mapper.Map<ProjectDTO>(project);
+
+            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, projectDTO);
         }
 
         // PUT: api/project/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProject(int id, Project project)
+        public async Task<IActionResult> UpdateProject(int id, ProjectDTO projectDTO)
         {
-            if (id != project.Id)
+            if (id != projectDTO.Id)
                 return BadRequest();
 
-            _context.Entry(project).State = EntityState.Modified;
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
+                return NotFound();
+
+            _mapper.Map(projectDTO, project);
 
             try
             {
