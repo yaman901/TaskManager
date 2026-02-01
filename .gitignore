@@ -1,0 +1,38 @@
+# ========================
+# General
+# ========================
+.env
+*.log
+*.user
+*.suo
+*.swp
+
+# ========================
+# ASP.NET Core
+# ========================
+bin/
+obj/
+*.db
+*.sqlite
+appsettings.Development.json
+
+# ========================
+# Visual Studio
+# ========================
+.vs/
+.vscode/
+
+# ========================
+# Angular / Node
+# ========================
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+# ========================
+# OS Files
+# ========================
+.DS_Store
+Thumbs.db
