@@ -69,9 +69,8 @@ namespace TaskManager.Api.Controllers
             if (user == null)
                 return NotFound();
 
-            // Map updated fields from DTO to entity
-            _mapper.Map(userDTO, user);
-
+                _mapper.Map(userDTO, user);
+         
             try
             {
                 await _context.SaveChangesAsync();
